@@ -147,7 +147,7 @@ sudo mv ./kubectl /usr/local/bin
 kubectl version --short --client
 ```
 
-### Step 8: Install eksctl
+## Step 8: Install eksctl:
 **"eksctl"** used to create the kubernetes cluster on the EKS.
 ```bash
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
@@ -155,33 +155,102 @@ sudo mv /tmp/eksctl /usr/local/bin
 eksctl version
 ```
 
-### Step 9: Setup EKS Cluster
-``` shell
-eksctl create cluster --name three-tier-cluster --region us-west-2 --node-type t2.medium --nodes-min 2 --nodes-max 2
-aws eks update-kubeconfig --region us-west-2 --name three-tier-cluster
+
+## Step 9: Setup EKS Cluster
+```bash
+eksctl create cluster --name three-tier-cluster-app --region us-east-1 --node-type t2.medium --nodes-min 2 --nodes-max 2
+aws eks update-kubeconfig --region us-east-1 --name three-tier-cluster-app
 kubectl get nodes
 ```
+### 1. Installation process:
+![17_EKS_cluster_creation](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/a6099e65-a97a-4344-8535-afbde912f5ec)
+### 2. Cluster is ready on AWS console:
 
+![17 1_cluster_ready](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/a8e1e9b6-3fe0-4b4a-8c48-e4e83d967839)
 
-
-
-### Step 8: Run Manifests
-``` shell
-kubectl create namespace workshop
-kubectl apply -f .
-kubectl delete -f .
+## Step 9: Go inside Kubernetes-manifests-file and deploy the Application on EKS: 
+## 1. Deploy Database :
+#### 1. First Create the Namespace:
+```bash
+kubectl create namespace three-tier
 ```
+
+#### 2. Create the Deployment, Secret and Service file:
+```bash
+cd Three-Tier-Application/Kubernetes-Manifests-files/Database
+kubectl apply -f deployment.yaml
+kubectl apply -f secrets.yaml
+kubectl apply -f service.yaml
+```
+#### 3. To view the deployment, pods, service:
+```bash
+kubectl get deployment -n three-tier
+kubectl get pods -n three-tier
+kubectl get svc -n three-tier
+kubectl get secrets -n three-tier
+```
+#### 4. Output:
+![18_k8s_database](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/f5272591-89a4-4bcd-8541-5528f9e8f2cd)
+
+## 2. Backend:
+####  1. Create the Deployment and Service file:  
+### [Note: While deploying Backend Make sure to Change ECR URL:]
+```bash
+cd Three-Tier-Application/Kubernetes-Manifests-files/Backend
+vi deployment.yaml
+```
+![19_image_backend](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/46d96872-4b37-4eeb-9e3d-329fec2a1575)
+
+![19 1_image_ecr](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/c600e159-c305-48af-b2ae-44b437b5c452)
+
+#### 2. Makes Changes and Deploy:
+```bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl get deployment -n three-tier
+kubectl get pods -n three-tier
+kubectl get svc -n three-tier
+```
+![19 2_backend_output](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/475255c4-fe04-4d5f-b713-71795c0b9749)
+
+#### 3. Ensure Database is connected to Backend:
+```bash
+kubectl logs <podname> -n three-tier
+```
+![19 3_backend_connected_to_databse](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/847d748d-fc06-4c96-a868-dc0fe8b2f78a)
+
+## 3. Frontend:
+#### 1. Create the Deployment and Service file:
+### [Note: While deploying Frontend Make sure to Change ECR URL:]
+```bash
+cd Three-Tier-Application/Kubernetes-Manifests-files/Frontend
+vi deployment.yaml
+```
+![20 1_change_image](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/2a28c5d3-cf53-4a32-9363-c1dd6d2cc524)
+
+#### 2. Makes Changes and Deploy:
+```bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl get deployment -n three-tier
+kubectl get pods -n three-tier
+kubectl get svc -n three-tier
+```
+#### 3. Output of Frontend:
+![20_frontend_creation](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/9cd941db-99b9-45af-ac01-f47f66ecc0c8)
 
 ### Step 9: Install AWS Load Balancer
-``` shell
+``` bash
 curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
 aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
-eksctl utils associate-iam-oidc-provider --region=us-west-2 --cluster=three-tier-cluster --approve
-eksctl create iamserviceaccount --cluster=three-tier-cluster --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::626072240565:policy/AWSLoadBalancerControllerIAMPolicy --approve --region=us-west-2
+eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=three-tier-cluster-app --approve
+eksctl create iamserviceaccount --cluster=three-tier-cluster-app --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::223065826485:policy/AWSLoadBalancerControllerIAMPolicy --approve --region=us-east-1
 ```
+![20_LOAD-BALANCER](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/67d379a5-104f-4fdd-ad96-02602476ef22)
+
 
 ### Step 10: Deploy AWS Load Balancer Controller
-``` shell
+```bash
 sudo snap install helm --classic
 helm repo add eks https://aws.github.io/eks-charts
 helm repo update eks
@@ -189,24 +258,13 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n ku
 kubectl get deployment -n kube-system aws-load-balancer-controller
 kubectl apply -f full_stack_lb.yaml
 ```
+## Output:
+![22_output](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/1831d8d8-5762-4160-9f1b-7c587abb9bfb)
 
 ### Cleanup
 - To delete the EKS cluster:
-``` shell
-eksctl delete cluster --name three-tier-cluster --region us-west-2
+``` bash
+eksctl delete cluster --name three-tier-cluster-app --region us-east-1
 ```
-
-## Contribution Guidelines
-- Fork the repository and create your feature branch.
-- Deploy the application, adding your creative enhancements.
-- Ensure your code adheres to the project's style and contribution guidelines.
-- Submit a Pull Request with a detailed description of your changes.
-
-## Rewards
-- Successful PR merges will be eligible for exciting prizes!
-
-## Support
-For any queries or issues, please open an issue in the repository.
-
 ---
-Happy Learning! 🚀👨‍💻👩‍💻
+Thank you..! 
