@@ -49,21 +49,53 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 ```
 ### To "unzip" this file install:
 ```bash
-sudo apt install unzip
+sudo yum install unzip
 unzip awscliv2.zip
 ```
-### Update the 
+### To update an existing installation of the AWS CLI
+```bash
 sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin --update
+```
+### Now Configure the AWS Credentials.
+```bash
 aws configure
 ```
+![7_aws Configuration](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/38ac6be9-02bd-48df-92e7-747418ede8a5)
 
-### Step 4: Install Docker
-``` shell
-sudo apt-get update
-sudo apt install docker.io
-docker ps
-sudo chown $USER /var/run/docker.sock
+## Step 3: Install Docker on your system.
+### To uninstall old version of docker 
+```bash
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
 ```
+### Set up the repository
+```bash
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+```
+### To install the latest version
+```bash
+sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+### Start and Enable docker
+```bash
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+### If you are using the privillaged user then: 
+```bash
+sudo usermod -aG docker user_name
+```
+## Step 4: Clone the Code
+```bash
+
+
 
 ### Step 5: Install kubectl
 ``` shell
