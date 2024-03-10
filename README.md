@@ -20,8 +20,7 @@ RESTful API endpoints for data interaction.
 MongoDB database for efficient data storage and retrieval.
 Scalable deployment on AWS EKS, ensuring high availability and fault tolerance.
 
-## 4. Getting Started
-To get started with this project, refer to our [comprehensive guide](https://amanpathakdevops.medium.com/advanced-end-to-end-devsecops-kubernetes-three-tier-project-using-aws-eks-argocd-prometheus-fbbfdb956d1a) that walks you through IAM user setup, infrastructure provisioning, CI/CD pipeline configuration, EKS cluster creation, and more.
+## 4. Getting Started.
 
 ### Step 1.  We need to create an IAM user and generate the AWS Access key
 - Create a new IAM User on AWS and give it to the AdministratorAccess for testing purposes (not recommended for your Organization's Projects)
