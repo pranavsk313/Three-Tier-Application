@@ -28,18 +28,18 @@ To get started with this project, refer to our [comprehensive guide](https://ama
 - Go to the AWS IAM Service and click on Users.
 - Generate Security Credentials: Access Key and Secret Access Key.
 
-### Click on Create user and Attach **AdministratorAccess** directly.
+### 1. Click on Create user and Attach **AdministratorAccess** directly.
 ![4_user_creation](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/1e1b44df-a3a0-4b59-b087-28029c283664)
 
-### Creating the Access key for "pranav" user.
+### 2. Creating the Access key for "pranav" user.
 ![6_Access_key](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/0b558d30-e36a-46e8-86ff-3328696f6d9d)
 
 ## Step 2: Launch an EC2 instance
 
-### Launch an RHEL instance in your favourite region (eg. region `us-east-1`).
+### 1. Launch an RHEL instance in your favourite region (eg. region `us-east-1`).
 ![1_instance launch](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/e0ac99dc-4cbe-4904-a102-a2cc7068975b)
 
-### SSH into the instance from your local machine. (putty, MobaXterm)
+### 2. SSH into the instance from your local machine. (putty, MobaXterm)
 ![1 1_local_access](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/25e79d77-a1c6-469f-8b3a-f2a87cccc4e1)
 
 ## Step 3: Install AWS CLI v2
@@ -92,32 +92,78 @@ sudo systemctl enable docker
 ```bash
 sudo usermod -aG docker user_name
 ```
-## Step 4: Clone the Code
+## Step 4: Clone the Github Code:
 ```bash
+sudo yum install git -y
+https://github.com/pranavsk313/Three-Tier-Application
+```
+## Step 5: 
+### Inside directry create the Dockerfile for frontend and backend.
+### 1. Frontend
+### Dockerfile for Frontend:
+```bash
+FROM node:14
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD [ "npm", "start" ]
+```
+### 2. Backend 
+### Dockerfile for Backend:
+```bash
+FROM node:14
+WORKDIR /app
+COPY package*.json ./
+RUN npm install 
+COPY . .
+CMD ["node", "index.js"]
+```
+
+## Step 6: Create the Public repository on ECR (Elastic Container Registry):
+![8_ECR_registry_creation](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/81eac788-41fe-4330-aff1-e254ac49cf2d)
 
 
+### 1. How to Push image to ECR:
+![9_push_command](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/a15f2e37-8549-4058-a186-4798264cb040)
 
-### Step 5: Install kubectl
-``` shell
+### 2. Build and push the docker images:
+![10_image_pushed_to_ECR](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/3432f8f9-caad-479c-b78c-7c3d30e61c60)
+
+### 3. Output of ECR:
+![11_ECR_image](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/1a4e6ebf-e5d6-4d57-b2b2-f08a2bd06016)
+
+![15_ECR_verified](https://github.com/pranavsk313/Three-Tier-Application/assets/122976840/d7fbbcfd-e9e0-497c-9535-0a672f5c5c8b)
+
+# [Note:- Create same for backend ]
+
+
+## Step 7: Install kubectl:
+- We are installing **kubectl** to control the kubernetes cluster.
+```bash
 curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin
 kubectl version --short --client
 ```
 
-### Step 6: Install eksctl
-``` shell
+### Step 8: Install eksctl
+**"eksctl"** used to create the kubernetes cluster on the EKS.
+```bash
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv /tmp/eksctl /usr/local/bin
 eksctl version
 ```
 
-### Step 7: Setup EKS Cluster
+### Step 9: Setup EKS Cluster
 ``` shell
 eksctl create cluster --name three-tier-cluster --region us-west-2 --node-type t2.medium --nodes-min 2 --nodes-max 2
 aws eks update-kubeconfig --region us-west-2 --name three-tier-cluster
 kubectl get nodes
 ```
+
+
+
 
 ### Step 8: Run Manifests
 ``` shell
